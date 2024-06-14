@@ -21,6 +21,9 @@ class APIRootView(APIView):
             "permissions": reverse(
                 "api:permission-list", request=request, format=None
             ),
+            "send_email": reverse(
+                "api:send-email", request=request, format=None
+            ),
         }
 
         return Response(data)

@@ -48,7 +48,8 @@ THIRD_PARTY_APPS = [
 
 PROJECT_APPS = [
     "apps.accounts",
-    "apps.school",
+    "apps.invoice",
+    "apps.emailapp",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + PROJECT_APPS
@@ -146,3 +147,26 @@ MEDIA_ROOT = BASE_DIR / "mediafiles"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "accounts.User"
+
+
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
+
+
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    "send-email-every-minute": {
+        "task": "apps.emailapp.tasks.send_email_task",
+        "schedule": crontab(minute="*"),
+    },
+}
+
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "kaliforlinux26@gmail.com"
+EMAIL_HOST_PASSWORD = "epwbvcnzcvsgqbyr"
+DEFAULT_FROM_EMAIL = "kaliforlinux26@gmail.com"

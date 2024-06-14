@@ -5,7 +5,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenVerifyView,
 )
-
+from apps.emailapp.views import SendEmailView
 from apps.accounts.views import UserTokenObtainPairView
 from apps.accounts.views import (
     UserViewSet,
@@ -14,6 +14,7 @@ from apps.accounts.views import (
     GroupViewSet,
     PermissionViewSet,
 )
+
 
 from .views import APIRootView
 
@@ -47,6 +48,7 @@ urlpatterns = [
     ),
     # path('auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     path("auth/me/", UserMeView.as_view(), name="auth-me"),
+    path("send-email/", SendEmailView.as_view(), name="send-email"),
 ]
 
 urlpatterns += router.urls
