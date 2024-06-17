@@ -48,7 +48,6 @@ THIRD_PARTY_APPS = [
 
 PROJECT_APPS = [
     "apps.accounts",
-    "apps.invoice",
     "apps.emailapp",
 ]
 

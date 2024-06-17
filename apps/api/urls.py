@@ -5,7 +5,10 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenVerifyView,
 )
-from apps.emailapp.views import SendEmailView
+from apps.emailapp.views import (
+    SendEmailView, PasswordTokenCheckAPI,
+    RequestPasswordResetEmail,
+    SetNewPasswordAPIView,)
 from apps.accounts.views import UserTokenObtainPairView
 from apps.accounts.views import (
     UserViewSet,
@@ -47,8 +50,22 @@ urlpatterns = [
         "auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"
     ),
     # path('auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
-    path("auth/me/", UserMeView.as_view(), name="auth-me"),
-    path("send-email/", SendEmailView.as_view(), name="send-email"),
+    path('send-email/', SendEmailView.as_view(), name='send-email'),
+    path(
+        "request-reset-email/",
+        RequestPasswordResetEmail.as_view(),
+        name="request-reset-email",
+    ),
+    path(
+        "password-reset/<uidb64>/<token>/",
+        PasswordTokenCheckAPI.as_view(),
+        name="password-reset-confirm",
+    ),
+    path(
+        "password-reset-complete/",
+        SetNewPasswordAPIView.as_view(),
+        name="password-reset-complete",
+    ),
 ]
 
 urlpatterns += router.urls
