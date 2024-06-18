@@ -162,10 +162,28 @@ CELERY_BEAT_SCHEDULE = {
 }
 
 
+# Email configuration (example)
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "kaliforlinux26@gmail.com"
-EMAIL_HOST_PASSWORD = "epwbvcnzcvsgqbyr"
-DEFAULT_FROM_EMAIL = "kaliforlinux26@gmail.com"
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "kaliforlinux26@gmail.com")
+EMAIL_HOST_PASSWORD = os.environ.get(
+    "EMAIL_HOST_PASSWORD", "zwrj nqul emsb swvl"
+)
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "DEBUG",
+    },
+}

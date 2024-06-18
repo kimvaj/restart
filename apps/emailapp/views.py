@@ -3,16 +3,18 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 import logging
-
+from django.shortcuts import redirect
+from django.contrib.auth import get_user_model
+from django.utils.encoding import force_str
 from django.shortcuts import render
 from rest_framework import generics, status
 from .serializers import (
     SetNewPasswordSerializer,
     ResetPasswordEmailRequestSerializer,
-    EmailSerializer
+    EmailSerializer,
 )
 from rest_framework.response import Response
-from django.contrib.auth.models import User
+from apps.accounts.models import User
 from .utils import Util
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
@@ -51,7 +53,7 @@ class RequestPasswordResetEmail(generics.GenericAPIView):
             token = PasswordResetTokenGenerator().make_token(user)
             current_site = get_current_site(request).domain
             relative_link = reverse(
-                "password-reset-confirm",
+                "api:password-reset-confirm",  # Correct namespace and URL name
                 kwargs={"uidb64": uidb64, "token": token},
             )
             absurl = f"http://{current_site}{relative_link}"
@@ -73,44 +75,47 @@ class RequestPasswordResetEmail(generics.GenericAPIView):
             )
 
 
-class CustomRedirect(HttpResponsePermanentRedirect):
-    allowed_schemes = [os.environ.get("APP_SCHEME"), "http", "https"]
-
-
 class PasswordTokenCheckAPI(generics.GenericAPIView):
-    serializer_class = SetNewPasswordSerializer
+    serializer_class = (
+        SetNewPasswordSerializer  # Assuming you have this serializer defined
+    )
 
     def get(self, request, uidb64, token):
         redirect_url = request.GET.get("redirect_url", "")
         try:
-            uidb64_padded = uidb64 + "=" * (
-                -len(uidb64) % 4
-            )  # Add padding to uidb64 if needed
-            id = smart_str(urlsafe_base64_decode(uidb64_padded))
-            user = User.objects.get(id=id)
+            # Decode uidb64 with proper padding
+            uid = force_str(urlsafe_base64_decode(uidb64 + "==="))
 
+            # Retrieve user based on decoded uid
+            user = get_user_model().objects.get(pk=uid)
+
+            # Check if token is valid for the user
             if not PasswordResetTokenGenerator().check_token(user, token):
                 if redirect_url:
-                    return CustomRedirect(f"{redirect_url}?token_valid=False")
-                return CustomRedirect(
+                    return redirect(f"{redirect_url}?token_valid=False")
+                return redirect(
                     f"{os.environ.get('FRONTEND_URL', '')}?token_valid=False"
                 )
 
+            # Token and uidb64 are valid
             if redirect_url:
-                return CustomRedirect(
+                return redirect(
                     f"{redirect_url}?token_valid=True&message=Credentials Valid&uidb64={uidb64}&token={token}"
                 )
-            return CustomRedirect(
+            return redirect(
                 f"{os.environ.get('FRONTEND_URL', '')}?token_valid=True"
             )
 
-        except DjangoUnicodeDecodeError:
+        except get_user_model().DoesNotExist:
+            # Handle case where user does not exist
             if redirect_url:
-                return CustomRedirect(f"{redirect_url}?token_valid=False")
-            return CustomRedirect(
+                return redirect(f"{redirect_url}?token_valid=False")
+            return redirect(
                 f"{os.environ.get('FRONTEND_URL', '')}?token_valid=False"
             )
-        except ValueError:
+
+        except (TypeError, ValueError, OverflowError):
+            # Handle decoding errors or other unexpected errors
             return Response(
                 {"error": "Invalid token or uidb64"},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -129,7 +134,6 @@ class SetNewPasswordAPIView(generics.GenericAPIView):
         )
 
 
-
 class SetNewPasswordAPIView(generics.GenericAPIView):
     serializer_class = SetNewPasswordSerializer
 
@@ -140,10 +144,6 @@ class SetNewPasswordAPIView(generics.GenericAPIView):
             {"success": True, "message": "Password reset success"},
             status=status.HTTP_200_OK,
         )
-
-
-
-
 
 
 class SendEmailView(APIView):
@@ -157,4 +157,3 @@ class SendEmailView(APIView):
                 status=status.HTTP_202_ACCEPTED,
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-

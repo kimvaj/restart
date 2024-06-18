@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from apps.accounts.models import User
 from rest_framework import serializers
-from django.contrib.auth.models import User
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import (
     force_str,
@@ -48,6 +47,7 @@ class SetNewPasswordSerializer(serializers.Serializer):
         except Exception:
             raise AuthenticationFailed("The reset link is invalid", 401)
         return super().validate(attrs)
+
 
 class EmailSerializer(serializers.Serializer):
     recipient = serializers.EmailField()

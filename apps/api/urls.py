@@ -6,9 +6,11 @@ from rest_framework_simplejwt.views import (
     TokenVerifyView,
 )
 from apps.emailapp.views import (
-    SendEmailView, PasswordTokenCheckAPI,
+    SendEmailView,
+    PasswordTokenCheckAPI,
     RequestPasswordResetEmail,
-    SetNewPasswordAPIView,)
+    SetNewPasswordAPIView,
+)
 from apps.accounts.views import UserTokenObtainPairView
 from apps.accounts.views import (
     UserViewSet,
@@ -50,14 +52,14 @@ urlpatterns = [
         "auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"
     ),
     # path('auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
-    path('send-email/', SendEmailView.as_view(), name='send-email'),
+    path("send-email/", SendEmailView.as_view(), name="send-email"),
     path(
         "request-reset-email/",
         RequestPasswordResetEmail.as_view(),
         name="request-reset-email",
     ),
     path(
-        "password-reset/<uidb64>/<token>/",
+        "api/password-reset/<uidb64>/<token>/",
         PasswordTokenCheckAPI.as_view(),
         name="password-reset-confirm",
     ),
